@@ -141,6 +141,75 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
 
 <section class="section">
     <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered" style="color: #6a053c;">Motivation</h2>
+        <div class="content has-text-centered">
+            <p>Preference-based RL offers an alternative to hand-designed rewards by learning from comparative feedback; yet its reliance on human labels prevents scalability. Our goal is to enable scalable, zero-shot PbRL with foundation models (FMs). We identify three critical challenges in existing preference-based RL frameworks:
+
+</p>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-full">
+                <h3 class="title is-4 has-text-centered">1. Limitations of Single-Modality Synthetic Feedback</h3>
+                
+                <div class="has-text-centered" style="margin-bottom: 20px;">
+                    <img src="assets/challenge1_1.png" alt="VLM Limitation" style="width: 80%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                </div>
+                    <p>
+                        <strong>Vision-based reasoning</strong> → reliable spatial grounding and goal-state assessment, but limited ability to interpret temporal progression or subtle motion dynamics.
+                    </p>
+                
+                <div class="has-text-centered" style="margin-bottom: 1.5rem;">
+                    <img src="assets/challenge1_2.png" alt="LLM Limitation" style="width: 80%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                </div>
+
+                <div class="content has-text-justified">
+                    <p>
+                        <strong>Text-centric analysis</strong> → good temporal and logical reasoning, but often hallucinate or miss fine-grained spatial interactions and key events.
+                    </p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <hr style="width: 50%; margin: 2rem auto;">
+
+        <div class="columns is-centered">
+            <div class="column is-full">
+                <h3 class="title is-4 has-text-centered">2. Query Ambiguity in Early Training</h3>
+                <div class="has-text-centered" style="margin-bottom: 1.5rem;">
+                    <img src="assets/challenge 2.png" alt="Query Ambiguity" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                </div>
+                <div class="content has-text-justified">
+                    <p>
+                        Early trajectories from random policies are uniformly low quality, lacking meaningful task variations → cannot provide informative comparisons.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <hr style="width: 50%; margin: 2rem auto;">
+
+        <div class="columns is-centered">
+            <div class="column is-full">
+                <h3 class="title is-4 has-text-centered">3. Preference Credit Assignment Uncertainty</h3>
+                <div class="has-text-centered" style="margin-bottom: 1.5rem;">
+                    <img src="assets/challenge 3.png" alt="Credit Assignment Uncertainty" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                </div>
+                <div class="content has-text-justified">
+                    <p>
+                        Preferences are given at trajectory level, but reward models operate at state-action level → hard to determine which steps caused the preference.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="section">
+    <div class="container is-max-desktop">
         <div class="columns is-centered has-text-centered">
             <div class="column">
                 <h2 class="title is-3 has-text-centered" style="color: #6a053c;">Framework Overview</h2>
@@ -155,6 +224,241 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
     </div>
 </section>
 
+<section class="section" style="padding-top: 0;">
+    <div class="container is-max-desktop">
+        
+        <div class="box method-box" onclick="toggleMethod('method1', this)">
+            <div class="columns is-vcentered">
+                <div class="column is-1">
+                    <span class="icon is-large" style="color: #6a053c;">
+                        <i class="fas fa-plus-circle fa-2x"></i>
+                    </span>
+                </div>
+                <div class="column">
+                    <h3 class="title is-4">1 Hierarchical Neuro-symbolic Preference Fusion</h3>
+                    <p class="subtitle is-6">Click to expand</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="method1" class="box content method-details" style="display: none; background-color: #fcfcfc;">
+            <div class="notification is-light is-info is-size-7" style="margin-bottom: 10px; padding: 0.5rem;">
+                <i class="fas fa-mouse-pointer"></i> Click on a subsection below to view its implementation code.
+            </div>
+            
+            <div class="columns is-centered">
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-1', 'code_1_1', '1.1 Intra-modal Fusion')">
+                    <h5 class="title is-6" style="color: #6a053c;">1.1 Intra-modal Fusion</h5>
+                    <p class="is-size-6">Crowd LLM/VLM evaluations <br>
+                            Major voting + Confidence estimation
+                    </p>
+                </div>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-1', 'code_1_2', '1.2 Inter-modal Fusion')">
+                    <h5 class="title is-6" style="color: #6a053c;">1.2 Inter-modal Fusion</h5>
+                    <p class="is-size-6">Fuse VLM and LLM preferences via Probabilistic Soft Logic <br>
+                        Model confidence, conflicts, agreement, and traj contexts
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="box code-window" style="background-color: #282c34; border-radius: 8px; margin-top: 15px;">
+                <div class="columns is-vcentered" style="margin-bottom: 0;">
+                    <div class="column">
+                        <span id="viewer-1-title" style="color: #abb2bf; font-weight: bold; font-family: monospace;">Select a module above...</span>
+                    </div>
+                </div>
+                <pre style="padding: 0; background: transparent;"><code class="language-python" id="viewer-1-code" style="font-size: 0.85em; border-radius: 5px;"># Python code will appear here when you click a subsection...</code></pre>
+            </div>
+        </div>
+
+
+        <div class="box method-box" onclick="toggleMethod('method2', this)">
+            <div class="columns is-vcentered">
+                <div class="column is-1">
+                    <span class="icon is-large" style="color: #6a053c;">
+                        <i class="fas fa-plus-circle fa-2x"></i>
+                    </span>
+                </div>
+                <div class="column">
+                    <h3 class="title is-4">2 Foresight Trajectory Generation</h3>
+                    <p class="subtitle is-6">Click to expand</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="method2" class="box content method-details" style="display: none; background-color: #fcfcfc;">
+            <div class="notification is-light is-info is-size-7" style="margin-bottom: 10px; padding: 0.5rem;">
+                <i class="fas fa-mouse-pointer"></i> Click on a subsection below to view its implementation code.
+            </div>
+
+            <div class="columns is-centered">
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-2', 'code_2_1', 'Step 1: High-Level Motion Plan Decomposition')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 1: High-Level Motion Plan Decomposition</h5>
+                    <p class="is-size-6">
+                        Decompose the task into 3–5 discrete high-level phases. For each phase, clearly specify: <br>
+                        - Phase Name<br>
+                        - Subgoal: What condition or spatial configuration defines success at this phase?<br>
+                        - Motion Strategy: What type of movement or action is needed?<br>
+                        - Constraint Handling: How to account for physical limits, contact, kinematic constraints, etc. 
+            
+                    </p>
+                </div>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-2', 'code_2_2', 'Step 2: Code Translation for Motion Primitives')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 2: Code Translation for Motion Primitives</h5>
+                    <p class="is-size-6">
+                        - Translate the high-level action plan into executable Python code. <br>
+                        - Implement each phase using structured, reusable motion primitives that can adapt to different task contexts. <br>
+                        - Key considerations: <br>
+                        • Control Logic: Implement continuous control logic for smooth transitions. <br>
+                        • Parameter Flexibility: Allow inputs of different initial conditions and motion strategy parameters.</p>
+                </div>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-2', 'code_2_3', 'Step 3: Trajectory Diversification and Sampling')">
+
+                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Trajectory Diversification and Sampling</h5>
+                    <p class="is-size-6">Generate {n} diverse trajectory samples by varying both: <br>
+                        - Initial Conditions: Sample from a distribution of start states (e.g., different object locations or robot poses)  <br>
+                        - Strategy Parameters: Adjust trajectory-level control parameters (e.g., approach angle, lift height, motion speed) Run the code multiple times to populate the trajectory buffer with diverse samples.</p>
+                </div>
+            </div>
+
+            <div class="box code-window" style="background-color: #282c34; border-radius: 8px; margin-top: 15px;">
+                <div class="columns is-vcentered" style="margin-bottom: 0;">
+                    <div class="column">
+                        <span id="viewer-2-title" style="color: #abb2bf; font-weight: bold; font-family: monospace;">Select a module above...</span>
+                    </div>
+                </div>
+                <pre style="padding: 0; background: transparent;"><code class="language-python" id="viewer-2-code" style="font-size: 0.85em; border-radius: 5px;"># Python code will appear here when you click a subsection...</code></pre>
+            </div>
+        </div>
+
+
+        <div class="box method-box" onclick="toggleMethod('method3', this)">
+            <div class="columns is-vcentered">
+                <div class="column is-1">
+                    <span class="icon is-large" style="color: #6a053c;">
+                        <i class="fas fa-plus-circle fa-2x"></i>
+                    </span>
+                </div>
+                <div class="column">
+                    <h3 class="title is-4">3 Hindsight Trajectory Generation</h3>
+                    <p class="subtitle is-6">Click to expand</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="method3" class="box content method-details" style="display: none; background-color: #fcfcfc;">
+            <div class="notification is-light is-info is-size-7" style="margin-bottom: 10px; padding: 0.5rem;">
+                <i class="fas fa-mouse-pointer"></i> Click on a subsection below to view its implementation code.
+            </div>
+
+            <div class="columns is-centered">
+                
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_1', 'Step 1: Abduction – Identify Causal Steps')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 1: Abduction – Identify Causal Steps</h5>
+                    <p class="is-size-6">- Analyze the preferred trajectory and determine which time steps are causally responsible for its being preferred. <br>
+                            - Focus on meaningful, task-relevant changes in state-action behavior that likely influenced the preference decision. <br>
+                            - You may use the provided keyframe indices as candidates, but you are not limited to them.</p>
+                </div>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_2', 'Step 2: Action - Generate Counterfactual Variant')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 2: Action - Generate Counterfactual Variant</h5>
+                    <p class="is-size-6">Given: <br>
+                    - Preferred Trajectory <br>
+                    - Causal_Steps and Causal_Reasoning Your Tasks:  <br>
+                    - Select one key step from the identified causal steps.  <br>
+                    - Generate a counterfactual trajectory by minimally modifying one state-action feature at that step to reverse the trajectory's preference. <br>
+                    - Light smoothing(2–3 steps before and after) is allowed to maintain continuity. <br>
+                    - All other steps in the trajectory must remain identical to the original.</p>
+                </div>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_3', 'Step 3: Prediction – Verify Counterfactual Preference')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Prediction</h5>
+                    <p class="is-size-6">
+                        Pair the counterfactual variant with the original trajectory. 
+                        Verify that the counterfactual is <strong>sub-preferred</strong> (σ* > σ*cf). 
+                        <br><br>
+                        If validated, apply the <strong>Causal Auxiliary Loss</strong> to enforce discriminability at the edited steps while maintaining consistency elsewhere.
+                    </p>
+                </div>
+            </div>
+
+            <div class="box code-window" style="background-color: #282c34; border-radius: 8px; margin-top: 15px;">
+                <div class="columns is-vcentered" style="margin-bottom: 0;">
+                    <div class="column">
+                        <span id="viewer-3-title" style="color: #abb2bf; font-weight: bold; font-family: monospace;">Select a module above...</span>
+                    </div>
+                </div>
+                <pre style="padding: 0; background: transparent;"><code class="language-python" id="viewer-3-code" style="font-size: 0.85em; border-radius: 5px;"># Python code will appear here when you click a subsection...</code></pre>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="section">
+    <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered" style="color: #6a053c;">Experimental Results</h2>
+        <div class="content has-text-centered">
+            <p>
+                - Better Task Performance; 
+                - Improved Synthetic Feedback Quality; 
+                - Enhanced Credit Assignment; 
+                - Better Cost-Performance Efficiency
+            </p>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-four-fifths has-text-centered">
+                <img src="assets/result_1.png" alt="Result 1" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <p class="is-size-6 has-text-weight-bold" style="margin-top: 10px;">
+                    Learning curves of PRIMT and baseline methods across all tasks
+                </p>
+            </div>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-four-fifths has-text-centered">
+                <img src="assets/result_2.png" alt="Result 2" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <p class="is-size-6 has-text-weight-bold" style="margin-top: 10px;">
+                    Ablation study on FM backbone selection.
+                </p>
+            </div>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-four-fifths has-text-centered">
+                <img src="assets/result_3.png" alt="Result 3" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <p class="is-size-6 has-text-weight-bold" style="margin-top: 10px;">
+                    Distribution of preference labels, showing the proportion of correct, incorrect, and indecisive labels across different methods.
+                </p>
+            </div>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-four-fifths has-text-centered">
+                <img src="assets/result_4.png" alt="Result 4" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <p class="is-size-6 has-text-weight-bold" style="margin-top: 10px;">
+                    Reward alignment analysis, comparing the learned reward outputs of PRIMT, ablations, and baselines against ground-truth rewards.
+                </p>
+                
+            </div>
+        </div>
+        <br>
+
+        <div class="columns is-centered">
+            <div class="column is-four-fifths has-text-centered">
+                <img src="assets/result_5.png" alt="Result 5" style="width: 100%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <p class="is-size-6 has-text-weight-bold" style="margin-top: 10px;">
+                    Cost-performance trade-off comparison of PRIMT against baseline methods
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
 
 <section class="section" id="experimental-demos">
     <div class="container is-max-desktop">
@@ -534,5 +838,429 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
     });
 </script>
 
+<style>
+    /* Styling for the main method clickable boxes */
+    .method-box {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        margin-bottom: 0.5rem !important;
+    }
+    .method-box:hover {
+        border-color: #6a053c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .method-details {
+        margin-bottom: 1.5rem !important;
+        border-top: 3px solid #6a053c;
+    }
+
+    /* Styling for the Sub-subsections */
+    .clickable-subsection {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    .clickable-subsection:hover {
+        background-color: #eef3f6; /* Light highlight on hover */
+    }
+    .clickable-subsection:active {
+        background-color: #dfe7ec;
+    }
+</style>
+
+<script>
+    // 1. Toggle the main Method sections
+    function toggleMethod(id, element) {
+        var content = document.getElementById(id);
+        var icon = element.querySelector('.fa-plus-circle, .fa-minus-circle');
+        
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            if(icon) {
+                icon.classList.remove('fa-minus-circle');
+                icon.classList.add('fa-plus-circle');
+            }
+        } else {
+            content.style.display = "block";
+            if(icon) {
+                icon.classList.remove('fa-plus-circle');
+                icon.classList.add('fa-minus-circle');
+            }
+        }
+    }
+
+    // 2. Dictionary of Python Code
+    // PASTE YOUR ACTUAL PYTHON CODE INSIDE THESE STRINGS
+    const codeRepository = {
+        'code_1_1': `# 1.1 Intra-modal Fusion
+    (1) query LLM or VLM multiple times with randomly permuted trajectory orderings
+
+    (2) get final intra-modal labels via major voting
+    # Input: P: set of K predictions from modality M, where P[k] contains (label_k, conf_k); alpha: balancing hyperparameter;
+    # Output: final_label, final_conf: The aggregated preference label and calibrated confidence score;
+    # set votes = { -1: 0, 0: 0, 1: 0 }
+
+    for k = 1 to K do
+        l = P[k].label_k
+        votes[l] = votes[l] + 1
+    end for
+    final_label = argmax(votes)
+
+    (3) calculate label confidence
+    set sum_conf = 0, N = 0
+    for k = 1 to K do
+        if P[k].label_k == final_label then
+            sum_conf = sum_conf + P[k].conf_k
+            N = N + 1
+        else
+            continue
+        end if
+    end for
+
+    // Calculate Average Confidence C_bar and Consistency Ratio C_dot
+    if N > 0 then
+        C_bar = sum_conf / N
+    else
+        C_bar = 0
+    end if
+    C_dot = N / K
+
+    // Final Confidence Calculation
+    final_conf = alpha * C_bar + (1 - alpha) * C_dot
+    return final_label, final_conf
+`,
+
+        'code_1_2': `# 1.2 Inter-modal Fusion
+    Defined Rules in PSL:
+
+    (1) Agreement Rule
+    for y in Labels:
+        for M in {VLM_Res, LLM_Res}:
+            // Distance = Body_Sum - Head - (Num_Body_Atoms - 1)
+            dist = IsAgree[y] + M.conf - Y[y] - 1
+            energy += w.agree * max(0, dist)^p
+
+    (2) Conflict Resolution Rules
+    for y in Labels:
+        // VLM Rule: !IsAgree ^ VLMLabel ^ ConfHigh(VLM) ^ VDHigh -> FinalLabel(y)
+        vlm_hit = 1.0 if VLM_Res.label == y else 0.0
+        dist_v = (1-IsAgree[y]) + vlm_hit + VLM_Res.conf + VDHigh - Y[y] - 3
+        energy += w.conflict * max(0, dist_v)^p
+        
+        // LLM Rule: !IsAgree ^ LLMLabel ^ ConfHigh(LLM) ^ TDHigh -> FinalLabel(y)
+        llm_hit = 1.0 if LLM_Res.label == y else 0.0
+        dist_l = (1-IsAgree[y]) + llm_hit + LLM_Res.conf + TDHigh - Y[y] - 3
+        energy += w.conflict * max(0, dist_l)^p
+
+    (3) Indecision Rule
+    dist_i = (1-VLM_Res.conf) + (1-LLM_Res.conf) - Y[-1] - 1
+    energy += w.indecision * max(0, dist_i)^p
+
+    (4) Online Convex Optimization
+    Y_star = argmin(Calculate_Energy(Y))
+         subject to: sum(Y) == 1  and  0 <= Y <= 1
+    return argmax(Y_star)
+`,
+
+
+
+        // --- Method 2 Placeholders ---
+        'code_2_1': `# High-Level Motion Plan: Door Opening
+# -------------------------------------------------------------------------
+# The task is decomposed into 4 sequential phases to ensure safe interaction.
+#
+# Phase 1: Approach
+# -----------------
+# - Subgoal: Position the gripper directly above the door handle with a safety margin.
+# - Motion Strategy: Linear interpolation (lerp) from current TCP to (obj_pos + approach_z).
+# - Constraints: Gripper must remain fully open (1.0). Torque set to 0.
+#
+# Phase 2: Grasp
+# --------------
+# - Subgoal: Establish a secure physical connection with the door handle.
+# - Motion Strategy: Descend vertically to object center -> Actuate gripper to close (0.0).
+# - Constraints: Apply specified 'grip_force' torque to ensure contact stability.
+#
+# Phase 3: Transport
+# -------------------------
+# - Subgoal: Unlatch and swing the door open to the target angle.
+# - Motion Strategy: Move TCP along a parameterized trajectory vector [pull_dx, pull_dy, lift_z].
+# - Constraints: Maintain closed grip (0.0) and constant torque throughout the pulling motion.
+#
+# Phase 4: Release
+# --------------
+# - Subgoal: Disengage from the door without disturbing its final state.
+# - Motion Strategy: Hold final position -> Actuate gripper to open (1.0).
+# - Constraints: Zero torque during release to prevent jerking the door.`,
+
+        'code_2_2': `# Example Python code for Door-Open foresight trajectory generation \n 
+
+def generate_trajectory(init_state, strategy_config, env_params):
+    """
+    Generate a full 100-step trajectory for a door-open task in 15D format.
+    The trajectory is composed of 4 motion phases:
+        1. Approach: Move above the door handle.
+        2. Grasp: Lower gripper and close.
+        3. Transport: Pull and slightly lift the handle.
+        4. Release: Stop pulling and open gripper.
+
+    Args:
+    init_state (dict): Initial values, including:
+        'tcp': (3,) TCP position
+        'grip': float, initial gripper open level (0 or 1)
+        'obj_pos': (3,) object (handle) position
+        'obj_ori': (4,) object orientation (quaternion)
+    strategy_config (dict): Motion parameters:
+        'approach_z': height to approach from above
+        'pull_dx': pull distance along x-axis
+        'pull_dy': pull distance along y-axis
+        'lift_z': small vertical lift
+        'grip_force': torque level when gripping
+    env_params (dict): Optional task-related constants (unused here)
+
+    Returns:
+        trajectory (np.ndarray): Array of shape (100, 15)
+    """    
+    trajectory = []
+
+    # === Phase 1: Approach ===
+    traj_phase1 = phase_approach(
+        start=init_state['tcp'],
+        goal=np.array([*init_state['obj_pos'][:2],
+        strategy_config["approach_z"]]),
+        steps=25,
+        grip=1.0,
+        torque=0.0,
+        obj_pos=init_state['obj_pos'],
+        obj_ori=init_state['obj_ori']
+    )
+    trajectory += traj_phase1
+
+    # === Phase 2: Grasp ===
+    traj_phase2 = phase_grasp(
+        pos=init_state['obj_pos'],
+        steps=10,
+        grip_start=1.0,
+        grip_end=0.0,
+        torque=strategy_config["grip_force"],
+        obj_ori=init_state['obj_ori']
+    )
+    trajectory += traj_phase2
+
+    # === Phase 3: Transport ===
+    pull_target = init_state['obj_pos'] + np.array([
+        strategy_config["pull_dx"],
+        strategy_config["pull_dy"],
+        strategy_config["lift_z"]
+    ])
+    traj_phase3 = phase_transport(
+        start=init_state['obj_pos'],
+        goal=pull_target,
+        steps=40,
+        grip=0.0,
+        torque=strategy_config["grip_force"],
+        obj_ori=init_state['obj_ori']
+    )
+    trajectory += traj_phase3
+
+    # === Phase 4: Release ===
+    traj_phase4 = phase_release(
+        pos=pull_target,
+        steps=25,
+        grip_start=0.0,
+        grip_end=1.0,
+        torque=0.0,
+        obj_ori=init_state['obj_ori']
+    )
+    trajectory += traj_phase4
+
+    return np.stack(trajectory, axis=0) # (100, 15)
+
+def phase_approach(start, goal, steps, grip, torque, obj_pos, obj_ori):
+    """ Move from start to goal with open gripper. """
+    return linear_segment(start, goal, steps, grip, torque, obj_pos, obj_ori)
+
+def phase_grasp(pos, steps, grip_start, grip_end, torque, obj_ori):
+    """ Stay at position and close gripper smoothly. """
+    traj = []
+    for i in range(steps):
+        alpha = i / (steps - 1)
+        grip = (1 - alpha) * grip_start + alpha * grip_end
+        tcp = pos.copy()
+        traj.append(build_step(tcp, grip, pos, obj_ori, delta=np.zeros(3), torque=torque))
+    return traj
+
+def phase_transport(start, goal, steps, grip, torque, obj_ori):
+    """ Pull the door handle while holding it. """
+    return linear_segment(start, goal, steps, grip, torque, goal, obj_ori)
+
+def phase_release(pos, steps, grip_start, grip_end, torque,
+    obj_ori):
+    """ Stay in place and open the gripper. """
+    return phase_grasp(pos, steps, grip_start, grip_end, torque, obj_ori)
+
+def linear_segment(start, goal, steps, grip, torque, obj_pos, obj_ori):
+    """
+    Linearly interpolate TCP between start and goal,
+    calculate delta at each step, and fill full 15D vector.
+    """
+    traj = []
+    for i in range(steps):
+        alpha = i / (steps - 1)
+        tcp = (1 - alpha) * start + alpha * goal
+        delta = tcp - traj[-1][0:3] if traj else np.zeros(3)
+        traj.append(build_step(tcp, grip, obj_pos, obj_ori, delta, torque))
+    return traj
+
+def build_step(tcp, grip, obj_pos, obj_ori, delta, torque):
+    """
+    Create one 15D timestep with full trajectory format:
+    [0:3] TCP pos, [3] grip, [4:7] obj pos, [7:11] obj ori,
+    [11:14] delta TCP, [14] torque
+    """
+    step = np.zeros(15)
+    step[0:3] = tcp
+    step[3] = grip
+    step[4:7] = obj_pos
+    step[7:11] = obj_ori
+    step[11:14] = delta
+    step[14] = torque
+    return step
+    `,
+        'code_2_3': `# Step 3: Trajectory Diversification and Sampling
+
+def sample_diverse_trajectories(n_samples=50):
+    """
+    Generates a dataset of diverse door-opening trajectories by
+    randomizing initial conditions and strategy parameters.
+    """
+    dataset = []
+
+    # Define nominal object pose (e.g., door handle location)
+    base_obj_pos = np.array([0.5, 0.0, 0.5]) 
+    base_obj_ori = np.array([0.0, 0.0, 0.0, 1.0])
+
+    for i in range(n_samples):
+        # 1. Vary Initial Conditions (Spatial Diversity)
+        # Add random noise (+/- 2cm) to the object position to simulate 
+        # perception noise or different environment setups.
+        pos_noise = np.random.uniform(-0.02, 0.02, size=3)
+        
+        init_state = {
+            'tcp': np.array([0.0, 0.0, 0.0]), # Robot start position
+            'grip': 0.0,
+            'obj_pos': base_obj_pos + pos_noise,
+            'obj_ori': base_obj_ori
+        }
+
+        # 2. Vary Strategy Parameters (Behavioral Diversity)
+        # Randomize how the robot approaches and pulls the door.
+        # This covers different valid ways to solve the same task.
+        strategy_config = {
+            # Approach from 15cm to 25cm above the handle
+            'approach_z': np.random.uniform(0.15, 0.25),
+            
+            # Pull backwards 20cm to 35cm
+            'pull_dx': np.random.uniform(-0.20, -0.35),
+            
+            # Lateral pull variance (imperfect straight pull)
+            'pull_dy': np.random.uniform(-0.05, 0.05),
+            
+            # Lift the handle slightly (0 to 5cm) during pull
+            'lift_z': np.random.uniform(0.0, 0.05),
+            
+            'grip_force': 10.0
+        }
+
+        # 3. Generate & Store
+        # Call the primitive-based generator from Step 2
+        try:
+            # generate_trajectory is the function defined in Step 2
+            trajectory = generate_trajectory(init_state, strategy_config, env_params={})
+
+            # Format entry for the trajectory buffer
+            sample = {
+                "traj_id": f"fore_{i:03d}",
+                "init_state": init_state,
+                "strategy_config": strategy_config,
+                "trajectory": trajectory # Shape: (100, 15)
+            }
+            dataset.append(sample)
+            
+        except Exception as e:
+            print(f"Generation failed for sample {i}: {e}")
+
+    return dataset`,
+
+        // --- Method 3 Placeholders ---
+
+        'code_3_1': `# Step 1: Abduction – Identify Causal Steps \n
+# Given inputs:
+1. Task description: {task_description}
+2. Trajectory Inputs: {text(1), text(2)}
+3. Preferred Trajectory: {trj_preferred}
+4. Keyframe Indices: {kvist(1), kvist(2)}
+5. Preference Reasoning: {LLM_reasoning, VLM_reasoning}
+
+Reply Format
+Causal_Steps: [list of identified step indices in the preferred trajectory]
+Causal_Reasoning: [brief explanation of why these steps are critical for the preference judgment]`,
+
+        'code_3_2': `# Step 2: Action - Generate Counterfactual Variant \n
+Reply Format
+Edited_Step: [index of the modified step]
+Edit_Description: [brief natural language description of the change]
+Counterfactual_Trajectory: [text-format trajectory description consistent with the original input format]`,
+        
+        'code_3_3': `# Step 3: Prediction – Verify Counterfactual Preference
+
+def causal_auxiliary_loss(reward_model, traj_pref, traj_cf, mask):
+    """
+    traj_pref: Originally preferred trajectory (s*)
+    traj_cf:   Counterfactual variant (s_cf)
+    mask:      1 for edited steps (causal), 0 for unchanged steps
+    """
+    
+    # 1. Get rewards for both trajectories
+    r_star = reward_model(traj_pref)
+    r_cf   = reward_model(traj_cf)
+
+    # 2. Term I: Causal Contrast Loss 
+    # Force r_star > r_cf by minimizing log(1 + exp(r_cf - r_star))
+    # This teaches the model WHICH specific steps caused the preference flip.
+    contrast_error = log(1 + exp(r_cf - r_star))
+    term_causal = sum(mask * contrast_error)
+
+    # Enforce rewards to remain identical where behavior is identical.
+    consistency_error = (r_star - r_cf) ** 2
+    term_consistency = sum((1 - mask) * consistency_error)
+
+    return term_causal + term_consistency`
+    };
+
+    // 3. Function to display the code
+    function showCode(viewerId, codeKey, titleText) {
+        // Find the specific viewer elements
+        const titleEl = document.getElementById(viewerId + '-title');
+        const codeEl = document.getElementById(viewerId + '-code');
+        
+        // Update Title
+        if(titleEl) titleEl.innerText = "Viewing: " + titleText;
+
+        // Update Code
+        const rawCode = codeRepository[codeKey] || "# Code not available yet.";
+        codeEl.textContent = rawCode;
+
+        // Remove previous highlighting attributes to ensure fresh highlight
+        codeEl.removeAttribute('data-highlighted');
+        codeEl.className = 'language-python';
+
+        // Trigger Highlight.js
+        hljs.highlightElement(codeEl);
+    }
+</script>
 
 </html>
