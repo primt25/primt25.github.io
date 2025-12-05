@@ -370,13 +370,12 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
                     - Light smoothing(2–3 steps before and after) is allowed to maintain continuity. <br>
                     - All other steps in the trajectory must remain identical to the original.</p>
                 </div>
-                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_3', 'Step 3: Prediction – Verify Preference Reversal')">
-                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Prediction – Verify Preference Reversal</h5>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_3', 'Step 3: Prediction – Filter & Verify')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Prediction – Filter & Verify</h5>
                     <p class="is-size-6">
-                        Feed the pair into the fusion module to <strong>verify</strong> the preference condition 
-                        (&sigma;<sup>*</sup> > &sigma;<sup>cf</sup>). 
+                        <strong>Minimal Edit Check:</strong> Filter generated variants based on the <strong>L1 distance</strong> to ensure they satisfy the minimal deviation threshold.
                         <br><br>
-                        We only accept counterfactuals where the <em>minimal edit</em> successfully causes a drop in preference. Validated pairs are used to compute the <strong>Causal Auxiliary Loss</strong>.
+                        <strong>Preference Verification:</strong> Feed survivors into the LLM-based intra-modal fusion module to verify the condition (&sigma;<sup>*</sup> > &sigma;<sup>cf</sup>). Validated pairs are then used to compute the <strong>Causal Auxiliary Loss</strong>.
                     </p>
                 </div>
             </div>
@@ -1215,47 +1214,47 @@ Edited_Step: [index of the modified step]
 Edit_Description: [brief natural language description of the change]
 Counterfactual_Trajectory: [text-format trajectory description consistent with the original input format]`,
         
-        'code_3_3': `# Step 3: Prediction – Verify Preference Reversal & Compute Loss
+        'code_3_3': `# Step 3: Prediction – Filter by L1 Distance & Verify Preference
 
-def process_counterfactual_step(traj_pref, traj_cf, mask, reward_model, fusion_oracle):
+def process_counterfactual_step(traj_pref, traj_cf, mask, oracle, l1_threshold=0.1):
     """
-    Verifies if the minimal edit successfully reversed the preference before training.
+    Filters and verifies counterfactuals before using them for training.
     
-    traj_pref:     Original preferred trajectory
-    traj_cf:       Generated counterfactual variant
-    mask:          1 for edited steps, 0 for unchanged steps
-    fusion_oracle: LLM/VLM module that outputs ground-truth preference scores (sigma)
+    traj_pref:    Original preferred trajectory
+    traj_cf:      Generated counterfactual variant
+    mask:         1 for edited steps, 0 for unchanged steps
+    l1_threshold: Max allowed deviation for "minimal edit"
     """
 
-    # 1. VERIFICATION: Check if the minimal edit actually caused a preference drop.
-    # We query the oracle (LLM+VLM) to score both trajectories.
-    sigma_star = fusion_oracle.score(traj_pref)
-    sigma_cf   = fusion_oracle.score(traj_cf)
+    # 1. MINIMAL EDIT CHECK (L1 Distance Filter)
+    # "Filter generated counterfactuals based on the L1 distance... ensuring a small deviation."
+    l1_distance = sum(abs(traj_pref - traj_cf))
 
-    # Condition: Original must be strictly preferred over Counterfactual
+    if l1_distance > l1_threshold:
+        return None # Discard: Deviation too large (Violates minimal edit principle)
+
+    # 2. PREFERENCE VERIFICATION (Prediction)
+    # "Verify whether the counterfactual is sub-preferred (sigma* > sigma_cf)."
+    sigma_star = oracle.score(traj_pref)
+    sigma_cf   = oracle.score(traj_cf)
+
     if sigma_star > sigma_cf:
         
-        # 2. CAUSAL LOSS CALCULATION (Eq. 15)
-        # If verified, we force the learnable Reward Model (r_psi) to agree with this causal fact.
-        
+        # 3. COMPUTE CAUSAL AUXILIARY LOSS (If validated)
+        # The pair is valid. Compute loss using the Reward Model (r_psi).
         r_star = reward_model(traj_pref)
         r_cf   = reward_model(traj_cf)
-
-        # Term I: Causal Contrast (Applied ONLY at Edited Steps)
-        # Push r_star > r_cf at the specific steps that were modified.
-        # Loss = log(1 + exp(r_cf - r_star))
+        
+        # Term I: Causal Contrast at edited steps
         contrast_loss = sum(mask * log(1 + exp(r_cf - r_star)))
-
-        # Term II: Reward Consistency (Applied at Unchanged Steps)
-        # Enforce rewards to be identical where the physical state is identical.
+        
+        # Term II: Consistency at unchanged steps
         consistency_loss = sum((1 - mask) * (r_star - r_cf)**2)
-
+        
         return contrast_loss + consistency_loss
 
     else:
-        # The edit failed to degrade the preference (or made it better).
-        # Discard this sample to prevent false causal attribution.
-        return None`
+        return None # Discard: Preference did not flip (Not a valid counterfactual)`
     };
 
     // 3. Function to display the code
