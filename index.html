@@ -143,34 +143,15 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
     <div class="container is-max-desktop">
         <h2 class="title is-3 has-text-centered" style="color: #6a053c;">Motivation</h2>
         <div class="content has-text-centered">
-<p>
-  Preference-based RL provides a compelling alternative to hand-designed rewards 
-  by learning directly from comparative feedback.
+            <p>Preference-based RL offers an alternative to hand-designed rewards by learning from comparative feedback; yet its reliance on human labels prevents scalability. Our goal is to enable scalable, zero-shot PbRL with foundation models (FMs). We identify three critical challenges in existing preference-based RL frameworks:
+
 </p>
-
-<p>
-  However, its dependence on human annotations fundamentally limits scalability.
-</p>
-
-<p>
-  ⭐ <strong>Our goal</strong> is to achieve scalable, zero-shot PbRL with foundation models (FMs). 
-</p>
-
-<p>
-  To this end, we focus on addressing the following key challenges:
-</p>
-
-
         </div>
         <br>
 
         <div class="columns is-centered">
             <div class="column is-full">
                 <h3 class="title is-4 has-text-centered">1. Limitations of Single-Modality Synthetic Feedback</h3>
-
-<p>
-  Existing work still faces challenges in ensuring reliable synthetic feedback due to the single-modal evalution patterns.
-</p>
                 
                 <div class="has-text-centered" style="margin-bottom: 20px;">
                     <img src="assets/challenge1_1.png" alt="VLM Limitation" style="width: 80%; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -389,13 +370,13 @@ Preference-based reinforcement learning (PbRL) has emerged as a promising paradi
                     - Light smoothing(2–3 steps before and after) is allowed to maintain continuity. <br>
                     - All other steps in the trajectory must remain identical to the original.</p>
                 </div>
-                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_3', 'Step 3: Prediction – Verify Counterfactual Preference')">
-                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Prediction</h5>
+                <div class="column is-one-third clickable-subsection" onclick="showCode('viewer-3', 'code_3_3', 'Step 3: Prediction – Verify Preference Reversal')">
+                    <h5 class="title is-6" style="color: #6a053c;">Step 3: Prediction – Verify Preference Reversal</h5>
                     <p class="is-size-6">
-                        Pair the counterfactual variant with the original trajectory. 
-                        Verify that the counterfactual is <strong>sub-preferred</strong> (σ* > σ*cf). 
+                        Feed the pair into the fusion module to <strong>verify</strong> the preference condition 
+                        (&sigma;<sup>*</sup> > &sigma;<sup>cf</sup>). 
                         <br><br>
-                        If validated, apply the <strong>Causal Auxiliary Loss</strong> to enforce discriminability at the edited steps while maintaining consistency elsewhere.
+                        We only accept counterfactuals where the <em>minimal edit</em> successfully causes a drop in preference. Validated pairs are used to compute the <strong>Causal Auxiliary Loss</strong>.
                     </p>
                 </div>
             </div>
@@ -1234,30 +1215,47 @@ Edited_Step: [index of the modified step]
 Edit_Description: [brief natural language description of the change]
 Counterfactual_Trajectory: [text-format trajectory description consistent with the original input format]`,
         
-        'code_3_3': `# Step 3: Prediction – Verify Counterfactual Preference
+        'code_3_3': `# Step 3: Prediction – Verify Preference Reversal & Compute Loss
 
-def causal_auxiliary_loss(reward_model, traj_pref, traj_cf, mask):
+def process_counterfactual_step(traj_pref, traj_cf, mask, reward_model, fusion_oracle):
     """
-    traj_pref: Originally preferred trajectory (s*)
-    traj_cf:   Counterfactual variant (s_cf)
-    mask:      1 for edited steps (causal), 0 for unchanged steps
-    """
+    Verifies if the minimal edit successfully reversed the preference before training.
     
-    # 1. Get rewards for both trajectories
-    r_star = reward_model(traj_pref)
-    r_cf   = reward_model(traj_cf)
+    traj_pref:     Original preferred trajectory
+    traj_cf:       Generated counterfactual variant
+    mask:          1 for edited steps, 0 for unchanged steps
+    fusion_oracle: LLM/VLM module that outputs ground-truth preference scores (sigma)
+    """
 
-    # 2. Term I: Causal Contrast Loss 
-    # Force r_star > r_cf by minimizing log(1 + exp(r_cf - r_star))
-    # This teaches the model WHICH specific steps caused the preference flip.
-    contrast_error = log(1 + exp(r_cf - r_star))
-    term_causal = sum(mask * contrast_error)
+    # 1. VERIFICATION: Check if the minimal edit actually caused a preference drop.
+    # We query the oracle (LLM+VLM) to score both trajectories.
+    sigma_star = fusion_oracle.score(traj_pref)
+    sigma_cf   = fusion_oracle.score(traj_cf)
 
-    # Enforce rewards to remain identical where behavior is identical.
-    consistency_error = (r_star - r_cf) ** 2
-    term_consistency = sum((1 - mask) * consistency_error)
+    # Condition: Original must be strictly preferred over Counterfactual
+    if sigma_star > sigma_cf:
+        
+        # 2. CAUSAL LOSS CALCULATION (Eq. 15)
+        # If verified, we force the learnable Reward Model (r_psi) to agree with this causal fact.
+        
+        r_star = reward_model(traj_pref)
+        r_cf   = reward_model(traj_cf)
 
-    return term_causal + term_consistency`
+        # Term I: Causal Contrast (Applied ONLY at Edited Steps)
+        # Push r_star > r_cf at the specific steps that were modified.
+        # Loss = log(1 + exp(r_cf - r_star))
+        contrast_loss = sum(mask * log(1 + exp(r_cf - r_star)))
+
+        # Term II: Reward Consistency (Applied at Unchanged Steps)
+        # Enforce rewards to be identical where the physical state is identical.
+        consistency_loss = sum((1 - mask) * (r_star - r_cf)**2)
+
+        return contrast_loss + consistency_loss
+
+    else:
+        # The edit failed to degrade the preference (or made it better).
+        # Discard this sample to prevent false causal attribution.
+        return None`
     };
 
     // 3. Function to display the code
